@@ -11,6 +11,10 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private JButton play;
     private boolean game;
     Font titleFont = new Font("SansSerif", Font.BOLD, 36);
+    private int hits,misses;
+    private double accuracy;
+
+    
 
     public Screen(){
         addKeyListener(this);
@@ -61,6 +65,10 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         g.setColor(Color.BLUE);
         g.fillRect(0, 0, 400, 500);
     }
+    public void drawStats(Graphics g){
+        g.drawString("hits: "+hits, 100, 450);
+    }
+
 
     public void animate(){
         while(true){
