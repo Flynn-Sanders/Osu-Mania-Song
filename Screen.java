@@ -1,20 +1,34 @@
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
-public class Screen extends JPanel implements KeyListener{
+public class Screen extends JPanel implements KeyListener, ActionListener{
 
     private Note[] notes = new Note[0];
     private Hitter s,d,j,k;
+    private JButton play;
+    private boolean game;
+    Font titleFont = new Font("SansSerif", Font.BOLD, 36);
 
     public Screen(){
         addKeyListener(this);
-        setFocusable(true);
+        this.setFocusable(true);
 
         s=new Hitter(1);
         d=new Hitter(2);
         j=new Hitter(3);
         k=new Hitter(4);
+
+        game=false;
+
+        play = new JButton("PLAY");
+        this.setLayout(null);
+        play.setBounds(133,250,133,50);
+        play.addActionListener(this);
+        this.add(play);
+
     }
 
     @Override
@@ -26,11 +40,21 @@ public class Screen extends JPanel implements KeyListener{
     @Override
 	public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        drawBg(g);
-        s.drawMe(g);
-        d.drawMe(g);
-        j.drawMe(g);
-        k.drawMe(g);
+        if(!game){
+            g.setColor(Color.PINK);
+            g.fillRect(0, 0, 400, 500);
+            g.setColor(Color.darkGray);
+            g.setFont(titleFont);
+            g.drawString("Monday Night Movin'", 21, 150);
+            play.setVisible(true);
+        }
+        if(game){
+            drawBg(g);
+            s.drawMe(g);
+            d.drawMe(g);
+            j.drawMe(g);
+            k.drawMe(g);
+        }
 	} 
 
     public void drawBg(Graphics g){
@@ -48,6 +72,14 @@ public class Screen extends JPanel implements KeyListener{
 
             repaint();
         }
+    }
+
+    @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == play) {
+                play.setVisible(false);
+                game=true;
+            }
     }
 
     public void keyPressed(KeyEvent e){
