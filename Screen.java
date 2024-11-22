@@ -80,7 +80,19 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         g.drawString(accuracyText, 270, 480);
     }
 
-    
+    public void checkHit(int col){
+        boolean hit=false;
+        for(Note n:notes){
+            if(n.checkCollision(col)){
+                hits++;
+                hit=true;
+                break;
+            }
+        }
+        if(!hit){
+            misses++;
+        }
+    }
 
 
     public void animate(){
@@ -106,10 +118,10 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     public void keyPressed(KeyEvent e){
         char key = e.getKeyChar();
         switch(key){
-            case 's': s.setPressed(true); break;
-            case 'd': d.setPressed(true); break;
-            case 'j': j.setPressed(true); break;
-            case 'k': k.setPressed(true); break;
+            case 's': s.setPressed(true); checkHit(1); break;
+            case 'd': d.setPressed(true); checkHit(2); break;
+            case 'j': j.setPressed(true); checkHit(3); break;
+            case 'k': k.setPressed(true); checkHit(4); break;
         }
     }
     public void keyReleased(KeyEvent e){
