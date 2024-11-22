@@ -2,17 +2,19 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 public class Screen extends JPanel implements KeyListener, ActionListener{
 
     private Note[] notes = new Note[0];
-    private Hitter s,d,j,k;
-    private JButton play;
+    private final Hitter s,d,j,k;
+    private final JButton play;
     private boolean game;
     Font titleFont = new Font("SansSerif", Font.BOLD, 36);
+    Font statsFont = new Font("SansSerif", Font.PLAIN, 16);
     private int hits,misses;
     private double accuracy;
+
+    private final String level1MapString = "";
 
     
 
@@ -54,6 +56,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         }
         if(game){
             drawBg(g);
+            drawStats(g);
             s.drawMe(g);
             d.drawMe(g);
             j.drawMe(g);
@@ -66,8 +69,18 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         g.fillRect(0, 0, 400, 500);
     }
     public void drawStats(Graphics g){
-        g.drawString("hits: "+hits, 100, 450);
+        g.setColor(Color.DARK_GRAY);
+        g.setFont(statsFont);
+        String hitText = "hits: "+hits;
+        String missText = "misses: "+misses;
+        String accuracyText = "accuracy: "+accuracy+"%";
+
+        g.drawString(hitText, 50, 480);
+        g.drawString(missText, 150, 480);
+        g.drawString(accuracyText, 270, 480);
     }
+
+    
 
 
     public void animate(){
