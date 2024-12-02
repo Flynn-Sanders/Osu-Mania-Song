@@ -16,6 +16,6 @@ public class Runner {
 		frame.pack();
 		frame.setVisible(true);
 
-		sc.animate();
+		
     }
 }

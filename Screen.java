@@ -1,11 +1,13 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class Screen extends JPanel implements KeyListener, ActionListener{
 
-    private Note[] notes = new Note[0];
+    ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
     private final JButton play;
     private boolean game;
@@ -14,7 +16,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private int hits,misses;
     private double accuracy;
 
-    private final String level1MapString = "";
+    private final String testMapString = "sdjkdjkjksjds";
 
     
 
@@ -61,6 +63,10 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             d.drawMe(g);
             j.drawMe(g);
             k.drawMe(g);
+
+            for(Note n : notes){
+                n.draw(g);
+            }
         }
 	} 
 
@@ -73,6 +79,12 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         g.setFont(statsFont);
         String hitText = "hits: "+hits;
         String missText = "misses: "+misses;
+        if(hits+misses > 0){
+            accuracy = (hits*100.0) / (hits+misses);
+        }
+        else{
+            accuracy=0;
+        }
         String accuracyText = "accuracy: "+accuracy+"%";
 
         g.drawString(hitText, 50, 480);
@@ -80,31 +92,54 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         g.drawString(accuracyText, 270, 480);
     }
 
-    public void checkHit(int col){
-        boolean hit=false;
-        for(Note n:notes){
-            if(n.checkCollision(col)){
+    public void checkHit(int col) {
+        boolean hit = false;
+        for (Note n : notes) {
+            if (n.checkCollision(col)) {
                 hits++;
-                hit=true;
-                break;
+                hit = true;
+                break; 
             }
         }
-        if(!hit){
+        if (!hit) {
             misses++;
         }
     }
 
+    public void runNotes(String map) {
+        char[] beatList = map.toCharArray();
+        Timer noteTimer = new Timer(125, new ActionListener() {
+            private int index = 0;
 
-    public void animate(){
-        while(true){
-            try{    
-                Thread.sleep(10); 
-            } catch (InterruptedException ex){
-                Thread.currentThread().interrupt();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (index < beatList.length && game) {
+                    char c = beatList[index++];
+                    switch (c) {
+                        case 's': notes.add(new Note(1)); break;
+                        case 'd': notes.add(new Note(2)); break;
+                        case 'j': notes.add(new Note(3)); break;
+                        case 'k': notes.add(new Note(4)); break;
+                    }
+                } else {
+                    ((Timer) e.getSource()).stop(); 
+                }
             }
+        });
+        noteTimer.start();
+}
 
+    private Timer animationTimer;
+
+    public void animate() {
+        animationTimer = new Timer(10, e -> {
+            notes.removeIf(note -> !note.getActive());
+            for (Note n : notes) {
+                n.move();
+            }
             repaint();
-        }
+        });
+        animationTimer.start();
     }
 
     @Override
@@ -112,6 +147,14 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             if (e.getSource() == play) {
                 play.setVisible(false);
                 game=true;
+                try{    
+                    Thread.sleep(2000); 
+                } catch (InterruptedException ex){
+                    Thread.currentThread().interrupt();
+                }
+
+                animate();
+                new Thread(() -> runNotes(testMapString)).start();
             }
     }
 
@@ -122,6 +165,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             case 'd': d.setPressed(true); checkHit(2); break;
             case 'j': j.setPressed(true); checkHit(3); break;
             case 'k': k.setPressed(true); checkHit(4); break;
+            case 'p': game=false; break;
         }
     }
     public void keyReleased(KeyEvent e){

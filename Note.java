@@ -4,39 +4,60 @@ public class Note {
     
 private int x,y;
 private boolean isActive;
+private int speed=3;
 
-    public Note(int x,int y){
-        this.x=x;
-        this.y=y;
+    public Note(int col){
+        y=-31;
+        switch(col){
+            case 1: x=30; break;
+            case 2: x=130; break;
+            case 3: x=230; break;
+            case 4: x=330; break;
+        }
         isActive=true;
     }
 
     public void move(){
-        y++;
+        y+=speed;
     }
 
     public void draw(Graphics g){
         g.setColor(Color.black);
-        g.fillRect(x, y, 30, 30);
+        if(isActive){
+            g.fillRect(x, y, 40, 40);
+        }
+    }
+
+    public boolean getActive(){
+        return isActive;
     }
 
     
     public boolean checkCollision(int col){
-        int checkX;
-        switch(col){
-            case 1: checkX=35; break;
-            case 2: checkX=135; break;
-            case 3: checkX=235; break;
-            case 4: checkX=335; break;
-            default: checkX = 0; break;
+        int targetX;
+        switch (col) {
+            case 1: targetX = 30; break;
+            case 2: targetX = 130; break;
+            case 3: targetX = 230; break;
+            case 4: targetX = 330; break;
+            default: return false; 
         }
-
-        if(y+30<=450&&y>=480&&x==checkX){
-	        return true;		
+    
+        int hitZoneTop = 415;
+        int hitZoneBottom = 465;
+    
+        boolean withinX = (x == targetX); 
+        boolean withinY = (y + 40 >= hitZoneTop) && (y <= hitZoneBottom); 
+        boolean outsideY = (y>=hitZoneBottom+1);
+    
+        if (withinX && withinY) {
+            isActive = false; 
+            return true;
         }
-        else{
-            return false;
+        else if(outsideY){
+            isActive=false;
         }
-
+    
+        return false;
     }
 }
