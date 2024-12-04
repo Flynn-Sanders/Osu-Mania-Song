@@ -1,11 +1,15 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URL;
 import java.util.ArrayList;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Screen extends JPanel implements KeyListener, ActionListener{
+    private Clip hitSound;
 
     ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
@@ -16,7 +20,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private int hits,misses;
     private double accuracy;
 
-    private final String testMapString = "sdjkdjkjksjds";
+    private final String testMapString = "sdj  k  k  sdj  k  k  sdj  k  k  s   s   s   s   s   s";
 
     
 
@@ -48,6 +52,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     @Override
 	public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        preloadHitSound();
         if(!game){
             g.setColor(Color.PINK);
             g.fillRect(0, 0, 400, 500);
@@ -70,6 +75,25 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         }
 	} 
 
+    
+    private void preloadHitSound() {
+        try {
+            URL url = this.getClass().getClassLoader().getResource("osu-hit-sound.wav");
+            hitSound = AudioSystem.getClip();
+            hitSound.open(AudioSystem.getAudioInputStream(url));
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        }
+    }
+
+    public void playHitSound() {
+        if (hitSound != null) {
+            hitSound.setFramePosition(0); // Rewind to the start
+            hitSound.start();
+        }
+    }
+
+
     public void drawBg(Graphics g){
         g.setColor(Color.BLUE);
         g.fillRect(0, 0, 400, 500);
@@ -85,30 +109,37 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         else{
             accuracy=0;
         }
-        String accuracyText = "accuracy: "+accuracy+"%";
+        String accuracyText = "accuracy: " + String.format("%.2f", accuracy) + "%";
 
         g.drawString(hitText, 50, 480);
         g.drawString(missText, 150, 480);
         g.drawString(accuracyText, 270, 480);
     }
 
-    public void checkHit(int col) {
-        boolean hit = false;
-        for (Note n : notes) {
-            if (n.checkCollision(col)) {
-                hits++;
-                hit = true;
-                break; 
-            }
+   public void checkHit(int col) {
+    Note currentNote = null;
+
+    for (Note n : notes) {
+        if (n.getCol() == col && n.isNearHitZone()) {
+            hits++;
+            currentNote = n;
+            notes.remove(n);
+            playHitSound(); 
+            break;
         }
-        if (!hit) {
-            misses++;
-        }
+    }
+    if (currentNote == null) {
+        misses++;
+    }
+}
+    
+    public void removeInactiveNotes() {
+        notes.removeIf(note -> !note.getActive());
     }
 
     public void runNotes(String map) {
         char[] beatList = map.toCharArray();
-        Timer noteTimer = new Timer(125, new ActionListener() {
+        Timer noteTimer = new Timer(100, new ActionListener() {
             private int index = 0;
 
             @Override
@@ -133,10 +164,11 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 
     public void animate() {
         animationTimer = new Timer(10, e -> {
-            notes.removeIf(note -> !note.getActive());
+            removeInactiveNotes();
             for (Note n : notes) {
                 n.move();
             }
+            
             repaint();
         });
         animationTimer.start();
@@ -146,16 +178,14 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == play) {
                 play.setVisible(false);
-                game=true;
-                try{    
-                    Thread.sleep(2000); 
-                } catch (InterruptedException ex){
-                    Thread.currentThread().interrupt();
-                }
+                game = true;
 
+                new Timer(2000, evt -> {
                 animate();
                 new Thread(() -> runNotes(testMapString)).start();
-            }
+                ((Timer) evt.getSource()).stop();
+            }).start();
+}
     }
 
     public void keyPressed(KeyEvent e){
@@ -167,6 +197,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             case 'k': k.setPressed(true); checkHit(4); break;
             case 'p': game=false; break;
         }
+        repaint();
     }
     public void keyReleased(KeyEvent e){
         char key = e.getKeyChar();
@@ -176,6 +207,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             case 'j': j.setPressed(false); break;
             case 'k': k.setPressed(false); break;
         }
+        repaint();
     }
     public void keyTyped(KeyEvent e){}
 }
