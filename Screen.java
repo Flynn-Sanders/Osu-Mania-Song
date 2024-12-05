@@ -179,6 +179,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             if (e.getSource() == play) {
                 play.setVisible(false);
                 game = true;
+                repaint();
 
                 new Timer(2000, evt -> {
                 animate();
