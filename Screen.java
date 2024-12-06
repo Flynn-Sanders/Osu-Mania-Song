@@ -2,14 +2,20 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URL;
 import java.util.ArrayList;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.SourceDataLine;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Screen extends JPanel implements KeyListener, ActionListener{
     private Clip hitSound;
+    private AudioInputStream audioStream;
+    private SourceDataLine sourceLine;
 
     ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
@@ -25,6 +31,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     
 
     public Screen(){
+        preloadSounds();
         addKeyListener(this);
         this.setFocusable(true);
 
@@ -52,13 +59,13 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     @Override
 	public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        preloadHitSound();
+        
         if(!game){
-            g.setColor(Color.PINK);
+            g.setColor(Color.BLACK);
             g.fillRect(0, 0, 400, 500);
-            g.setColor(Color.darkGray);
+            g.setColor(Color.WHITE);
             g.setFont(titleFont);
-            g.drawString("Monday Night Movin'", 21, 150);
+            g.drawString("A GREAT CHAOS", 40, 150);
             play.setVisible(true);
         }
         if(game){
@@ -76,11 +83,11 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 	} 
 
     
-    private void preloadHitSound() {
+    private void preloadSounds() {
         try {
-            URL url = this.getClass().getClassLoader().getResource("osu-hit-sound.wav");
+            URL hitUrl = this.getClass().getClassLoader().getResource("osu-hit-sound.wav");
             hitSound = AudioSystem.getClip();
-            hitSound.open(AudioSystem.getAudioInputStream(url));
+            hitSound.open(AudioSystem.getAudioInputStream(hitUrl));
         } catch (Exception exc) {
             exc.printStackTrace();
         }
@@ -92,14 +99,42 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             hitSound.start();
         }
     }
+    private void playSong1Stream() {
+    try {
+        URL ssUrl = this.getClass().getClassLoader().getResource("ss.wav");
+        audioStream = AudioSystem.getAudioInputStream(ssUrl);
+        AudioFormat format = audioStream.getFormat();
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+        sourceLine = (SourceDataLine) AudioSystem.getLine(info);
+        sourceLine.open(format);
+        sourceLine.start();
+
+        new Thread(() -> {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            try {
+                while ((bytesRead = audioStream.read(buffer)) != -1) {
+                    sourceLine.write(buffer, 0, bytesRead);
+                }
+                sourceLine.drain();
+                sourceLine.close();
+                audioStream.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+    } catch (Exception exc) {
+        exc.printStackTrace();
+    }
+}
 
 
     public void drawBg(Graphics g){
-        g.setColor(Color.BLUE);
+        g.setColor(Color.BLACK);
         g.fillRect(0, 0, 400, 500);
     }
     public void drawStats(Graphics g){
-        g.setColor(Color.DARK_GRAY);
+        g.setColor(Color.WHITE);
         g.setFont(statsFont);
         String hitText = "hits: "+hits;
         String missText = "misses: "+misses;
@@ -163,13 +198,12 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private Timer animationTimer;
 
     public void animate() {
-        animationTimer = new Timer(10, e -> {
+        animationTimer = new Timer(16, e -> {
             removeInactiveNotes();
             for (Note n : notes) {
                 n.move();
             }
-            
-            repaint();
+            if(!notes.isEmpty()){repaint();}
         });
         animationTimer.start();
     }
@@ -181,9 +215,10 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
                 game = true;
                 repaint();
 
-                new Timer(2000, evt -> {
+                new Timer(1500, evt -> {
                 animate();
                 new Thread(() -> runNotes(testMapString)).start();
+                playSong1Stream();
                 ((Timer) evt.getSource()).stop();
             }).start();
 }

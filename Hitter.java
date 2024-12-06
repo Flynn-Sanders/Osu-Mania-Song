@@ -17,7 +17,7 @@ public class Hitter {
     public void drawMe(Graphics g){
             Graphics2D g2d = (Graphics2D) g;
             if(isPressed) { g2d.setStroke(new BasicStroke(3)); }
-            g.setColor(Color.white);
+            g.setColor(Color.red);
             g.drawRect(x, y, 40, 40);
             g2d.setStroke(new BasicStroke(0));
         

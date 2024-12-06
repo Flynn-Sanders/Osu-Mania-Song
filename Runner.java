@@ -5,7 +5,7 @@ public class Runner {
 	public static void main(String[] args) {
 
 
-		JFrame frame = new JFrame("Monday Night Movin'");
+		JFrame frame = new JFrame("Q2 Project'");
 
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

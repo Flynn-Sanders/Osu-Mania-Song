@@ -1,4 +1,5 @@
 import java.awt.*;
+import static java.awt.Color.white;
 
 public class Note {
     
@@ -26,7 +27,7 @@ private int speed=5;
     }
 
     public void draw(Graphics g){
-        g.setColor(Color.black);
+        g.setColor(white);
         if(isActive){
             g.fillRect(x, y, 40, 40);
         }
