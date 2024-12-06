@@ -1,7 +1,11 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -28,16 +32,16 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private boolean game;
     Font titleFont = new Font("SansSerif", Font.BOLD, 36);
     Font statsFont = new Font("SansSerif", Font.PLAIN, 16);
+    Font descFont = new Font("SansSerif", Font.PLAIN, 24);
     private int hits,misses;
     private double accuracy;
 
     private char[] noteCol;
     private int[] noteTime;
-    private String noteMap = "s:1000,j:1000,k:2000,d:2000,s:3000,k:3000,d:4000,j:4000";
+    private String noteMap = "s:1500,j:1500,k:2500,d:2500,s:3500,k:3500,d:4500,j:4500";
     private int noteIndex = 0;
     
-
-    
+    private BufferedImage menuImg;
 
     public Screen(){
         preloadSounds();
@@ -57,6 +61,13 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         play.addActionListener(this);
         this.add(play);
 
+
+        try {
+            menuImg = ImageIO.read(new File("agc.jpg"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -70,11 +81,13 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         super.paintComponent(g);
         
         if(!game){
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, 400, 500);
+            g.drawImage(menuImg, 0, 0, 400, 500, null);
             g.setColor(Color.WHITE);
             g.setFont(titleFont);
-            g.drawString("A GREAT CHAOS", 40, 150);
+            g.drawString("A GREAT CHAOS", 45, 150);
+            g.setFont(descFont);
+            g.drawString("HOW TO PLAY:\n", 3040, 350);
+            
             play.setVisible(true);
         }
         if(game){
@@ -167,9 +180,9 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         }
         String accuracyText = "accuracy: " + String.format("%.2f", accuracy) + "%";
 
-        g.drawString(hitText, 50, 480);
-        g.drawString(missText, 150, 480);
-        g.drawString(accuracyText, 270, 480);
+        g.drawString(hitText, 40, 480);
+        g.drawString(missText, 140, 480);
+        g.drawString(accuracyText, 250, 480);
     }
 
    public void checkHit(int col) {
