@@ -95,7 +95,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 
     public void playHitSound() {
         if (hitSound != null) {
-            hitSound.setFramePosition(0); // Rewind to the start
+            hitSound.setFramePosition(0); 
             hitSound.start();
         }
     }
