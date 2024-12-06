@@ -18,6 +18,9 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private SourceDataLine sourceLine;
 
     private double timeSincePlay;
+    private long startTime;
+    
+    private Timer animationTimer;
 
     ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
@@ -28,7 +31,11 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private int hits,misses;
     private double accuracy;
 
-    private final String testMapString = "sdj  k  k  sdj  k  k  sdj  k  k  s   s   s   s   s   s";
+    private char[] noteCol;
+    private int[] noteTime;
+    private String noteMap = "s:1000,j:1000,k:2000,d:2000,s:3000,k:3000,d:4000,j:4000";
+    private int noteIndex = 0;
+    
 
     
 
@@ -94,6 +101,18 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             exc.printStackTrace();
         }
     }
+    private void parseNoteMap(String map){
+        String[] noteEntries = map.split(",");
+        noteCol = new char[noteEntries.length];
+        noteTime = new int[noteEntries.length];
+
+        for (int i = 0; i < noteEntries.length; i++){
+            String[] sepParts = noteEntries[i].split(":");
+            noteTime[i] = Integer.parseInt(sepParts[1]) - 1440;
+            noteCol[i] = sepParts[0].charAt(0);
+        }
+    }
+
 
     public void playHitSound() {
         if (hitSound != null) {
@@ -174,39 +193,37 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         notes.removeIf(note -> !note.getActive());
     }
 
-    public void runNotes(String map) {
-        char[] beatList = map.toCharArray();
-        Timer noteTimer = new Timer(100, new ActionListener() {
-            private int index = 0;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (index < beatList.length && game) {
-                    char c = beatList[index++];
-                    switch (c) {
-                        case 's': notes.add(new Note(1)); break;
-                        case 'd': notes.add(new Note(2)); break;
-                        case 'j': notes.add(new Note(3)); break;
-                        case 'k': notes.add(new Note(4)); break;
-                    }
-                } else {
-                    ((Timer) e.getSource()).stop(); 
-                }
-            }
-        });
-        noteTimer.start();
-}
-
-    private Timer animationTimer;
 
     public void animate() {
+        startTime = System.nanoTime();
         animationTimer = new Timer(16, e -> {
+            long elapsedNanoSec = System.nanoTime() - startTime;
+            timeSincePlay=elapsedNanoSec / 1_000_000.0;
+
+            while(noteIndex<noteTime.length && noteTime[noteIndex] <= timeSincePlay){
+                do{
+                    char col = noteCol[noteIndex];
+                    int colInt = switch(col){
+                        case 's' -> 1;
+                        case 'd' -> 2;
+                        case 'j' -> 3;
+                        case 'k' -> 4;
+                        default -> 0;
+                    };
+                    if(colInt!=0){
+                        notes.add(new Note(colInt,noteTime[noteIndex]));
+                        System.out.println("Note " + noteIndex + " spawned at " + timeSincePlay + " ms (expected: " + noteTime[noteIndex] + " ms)");
+                    }
+                    noteIndex++;
+                } while (noteIndex < noteTime.length && noteTime[noteIndex] == noteTime[noteIndex - 1]);
+            }
+
             removeInactiveNotes();
-            timeSincePlay+=16;
+            
             for (Note n : notes) {
                 n.move();
             }
-            if(!notes.isEmpty()){repaint();}
+            repaint();
         });
         animationTimer.start();
     }
@@ -219,8 +236,8 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
                 repaint();
 
                 new Timer(1500, evt -> {
+                parseNoteMap(noteMap);
                 animate();
-                new Thread(() -> runNotes(testMapString)).start();
                 playSong1Stream();
                 ((Timer) evt.getSource()).stop();
             }).start();
