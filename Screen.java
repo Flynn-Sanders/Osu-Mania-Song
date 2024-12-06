@@ -17,6 +17,8 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private AudioInputStream audioStream;
     private SourceDataLine sourceLine;
 
+    private double timeSincePlay;
+
     ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
     private final JButton play;
@@ -200,6 +202,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     public void animate() {
         animationTimer = new Timer(16, e -> {
             removeInactiveNotes();
+            timeSincePlay+=16;
             for (Note n : notes) {
                 n.move();
             }
