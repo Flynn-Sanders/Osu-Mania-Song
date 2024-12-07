@@ -17,14 +17,20 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Screen extends JPanel implements KeyListener, ActionListener{
-    private Clip hitSound;
     private AudioInputStream audioStream;
     private SourceDataLine sourceLine;
 
     private double timeSincePlay;
     private long startTime;
     
+    private Note testNote = new Note(0, 0);
+    private double travelTime = testNote.getTravelTime();
+
     private Timer animationTimer;
+
+    private Clip[] hitSounds;
+    private int hitSoundIndex = 0;
+    private static final int maxHitSounds = 5;
 
     ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
@@ -38,7 +44,9 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 
     private char[] noteCol;
     private int[] noteTime;
-    private String noteMap = "s:1500,j:1500,k:2500,d:2500,s:3500,k:3500,d:4500,j:4500";
+    private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380";
+    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              dein            habit
+    /// 
     private int noteIndex = 0;
     
     private BufferedImage menuImg;
@@ -82,11 +90,15 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         
         if(!game){
             g.drawImage(menuImg, 0, 0, 400, 500, null);
-            g.setColor(Color.WHITE);
+            g.setColor(Color.RED);
             g.setFont(titleFont);
-            g.drawString("A GREAT CHAOS", 45, 150);
+            g.drawString("A GREAT CHAOS", 55, 150);
             g.setFont(descFont);
-            g.drawString("HOW TO PLAY:\n", 3040, 350);
+            g.setColor(Color.lightGray);
+            g.drawString("HOW TO PLAY:", 115, 350);
+            g.drawString("Use the s, d, j, and k keys when",15, 380);
+            g.drawString("the notes in the 4 columns align",15, 400);
+            g.drawString("with the hitters (bottom screen)",17, 420);
             
             play.setVisible(true);
         }
@@ -107,9 +119,15 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     
     private void preloadSounds() {
         try {
+            hitSounds = new Clip[maxHitSounds];
             URL hitUrl = this.getClass().getClassLoader().getResource("osu-hit-sound.wav");
-            hitSound = AudioSystem.getClip();
-            hitSound.open(AudioSystem.getAudioInputStream(hitUrl));
+            System.out.println("Loading hit sounds");
+            for (int i = 0; i < maxHitSounds; i++) {
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(hitUrl);
+                hitSounds[i] = AudioSystem.getClip();
+                hitSounds[i].open(audioStream);
+                System.out.println("Clip " + i + " loaded successfully.");
+            }
         } catch (Exception exc) {
             exc.printStackTrace();
         }
@@ -121,16 +139,28 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 
         for (int i = 0; i < noteEntries.length; i++){
             String[] sepParts = noteEntries[i].split(":");
-            noteTime[i] = Integer.parseInt(sepParts[1]) - 1440;
+            noteTime[i] = Integer.parseInt(sepParts[1]) - (int)travelTime;
             noteCol[i] = sepParts[0].charAt(0);
         }
     }
 
 
     public void playHitSound() {
-        if (hitSound != null) {
-            hitSound.setFramePosition(0); 
-            hitSound.start();
+        if (hitSounds == null || hitSounds.length == 0) {
+            System.out.println("No hit sounds loaded!");
+            return;
+        }
+    
+        Clip currentClip = hitSounds[hitSoundIndex];
+        if (currentClip != null) {
+            if (currentClip.isRunning()) {
+                currentClip.stop(); 
+            }
+            currentClip.setFramePosition(0); 
+            currentClip.start(); 
+            hitSoundIndex = (hitSoundIndex + 1) % maxHitSounds; 
+        } else {
+            System.out.println("Clip " + hitSoundIndex + " is null!");
         }
     }
     private void playSong1Stream() {
@@ -225,7 +255,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
                     };
                     if(colInt!=0){
                         notes.add(new Note(colInt,noteTime[noteIndex]));
-                        System.out.println("Note " + noteIndex + " spawned at " + timeSincePlay + " ms (expected: " + noteTime[noteIndex] + " ms)");
+                        //System.out.println("Note " + noteIndex + " at " + timeSincePlay + " ms (expected: " + noteTime[noteIndex] + " ms)");
                     }
                     noteIndex++;
                 } while (noteIndex < noteTime.length && noteTime[noteIndex] == noteTime[noteIndex - 1]);
@@ -248,7 +278,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
                 game = true;
                 repaint();
 
-                new Timer(1500, evt -> {
+                new Timer(500, evt -> {
                 parseNoteMap(noteMap);
                 animate();
                 playSong1Stream();

@@ -6,7 +6,7 @@ public class Note {
 private int x,y,column;
 private boolean isActive;
 private int speed=5;
-private double travelTime = 7200/speed;
+private double travelTime = 7200/speed + 80;
 private double spawnTime;
 
     public Note(int col,double spawnTime){
@@ -18,6 +18,7 @@ private double spawnTime;
             case 2: x=130; break;
             case 3: x=230; break;
             case 4: x=330; break;
+            default: x=-100; break;
         }
         isActive=true;
     }
@@ -39,8 +40,8 @@ private double spawnTime;
     public boolean getActive(){
         return isActive;
     }
-    public double getTime(){
-        return spawnTime;
+    public double getTravelTime(){
+        return travelTime;
     }
     public int getCol(){
         return column;
