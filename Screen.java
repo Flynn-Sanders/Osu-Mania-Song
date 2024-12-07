@@ -45,7 +45,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private char[] noteCol;
     private int[] noteTime;
     private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380";
-    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              dein            habit
+    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              deine           habit
     /// 
     private int noteIndex = 0;
     
