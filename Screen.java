@@ -36,6 +36,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     private final Hitter s,d,j,k;
     private final JButton play;
     private boolean game;
+    private boolean startMenu;
     Font titleFont = new Font("SansSerif", Font.BOLD, 36);
     Font statsFont = new Font("SansSerif", Font.PLAIN, 16);
     Font descFont = new Font("SansSerif", Font.PLAIN, 24);
@@ -44,11 +45,10 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 
     private char[] noteCol;
     private int[] noteTime;
-    private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380";
-    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              deine           habit
+    private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380,s:17750,s:18210,d:18600,k:19080,k:19180,d:19450,j:19870,s:20100,j:20340,k:20800,s:20960,s:21150,d:21350,j:21550,j:21930,k:22170,s:22250,d:22470,s:22650,k:22900,j:23050,s:23300,d:23470,j:23730,k:24080,d:24340,j:24510:,s:24720,k:24970,d:25200,d:25340,";
+    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              deine           habit           kick    stand   yuh     bi-     kuh    yuh       yuh    i'm     lea      nin    i       chop    the     top     off     the     m      claren   this    aint    no   lam        b       ghi     ni      my      white    ho     got     big     tits
     /// 
     private int noteIndex = 0;
-    
     private BufferedImage menuImg;
 
     public Screen(){
@@ -62,6 +62,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         k=new Hitter(4);
 
         game=false;
+        startMenu=true;
 
         play = new JButton("PLAY");
         this.setLayout(null);
@@ -88,7 +89,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 	public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        if(!game){
+        if(startMenu){
             g.drawImage(menuImg, 0, 0, 400, 500, null);
             g.setColor(Color.RED);
             g.setFont(titleFont);
@@ -190,11 +191,24 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     } catch (Exception exc) {
         exc.printStackTrace();
     }
-}
+    }
+    public void stopSong() {
+        try {
+            if (sourceLine != null && sourceLine.isOpen()) {
+                sourceLine.stop();  
+                sourceLine.close(); 
+                audioStream.close(); 
+                
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error stopping the song.");
+        }
+    }
 
 
     public void drawBg(Graphics g){
-        g.setColor(Color.BLACK);
+        g.setColor(Color.lightGray);
         g.fillRect(0, 0, 400, 500);
     }
     public void drawStats(Graphics g){
@@ -233,6 +247,12 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 }
     
     public void removeInactiveNotes() {
+        for(Note n : notes){
+            if(n.getY()>500){
+                misses++;
+                n.move();
+            }
+        }
         notes.removeIf(note -> !note.getActive());
     }
 
@@ -276,6 +296,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             if (e.getSource() == play) {
                 play.setVisible(false);
                 game = true;
+                startMenu = false;
                 repaint();
 
                 new Timer(500, evt -> {
@@ -294,7 +315,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             case 'd': d.setPressed(true); checkHit(2); break;
             case 'j': j.setPressed(true); checkHit(3); break;
             case 'k': k.setPressed(true); checkHit(4); break;
-            case 'p': game=false; break;
+            case 'p': game=false; stopSong(); break;
         }
         repaint();
     }

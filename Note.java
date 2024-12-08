@@ -34,11 +34,19 @@ private double spawnTime;
         g.setColor(white);
         if(isActive){
             g.fillRect(x, y, 40, 40);
+
+            g.setColor(Color.black);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setStroke(new BasicStroke(3));
+            g.drawRect(x-1, y-1, 42, 42);
         }
     }
 
     public boolean getActive(){
         return isActive;
+    }
+    public int getY(){
+        return y;
     }
     public double getTravelTime(){
         return travelTime;
@@ -52,7 +60,4 @@ private double spawnTime;
 
         return (y + 40 >= hitZoneTop) && (y <= hitZoneBottom); 
     }
-    
-
-    
 }
