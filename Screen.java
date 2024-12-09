@@ -1,3 +1,5 @@
+import static java.awt.Color.white;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -35,8 +37,11 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
     private final JButton play;
+
     private boolean game;
     private boolean startMenu;
+    private boolean endMenu;
+
     Font titleFont = new Font("SansSerif", Font.BOLD, 36);
     Font statsFont = new Font("SansSerif", Font.PLAIN, 16);
     Font descFont = new Font("SansSerif", Font.PLAIN, 24);
@@ -103,7 +108,15 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             
             play.setVisible(true);
         }
-        if(game){
+        else if (endMenu){
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, 400, 500);
+            g.setColor(white);
+            g.setFont(titleFont);
+            g.drawString("YOU DID IT", 100, 150);
+            drawStats(g);
+        }
+        else if(game){
             drawBg(g);
             drawStats(g);
             s.drawMe(g);
@@ -274,10 +287,17 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
                     };
                     if(colInt!=0){
                         notes.add(new Note(colInt,noteTime[noteIndex]));
-                        System.out.println("Note " + noteIndex + " at " + timeSincePlay + " ms (expected: " + noteTime[noteIndex] + " ms)");
+                        //System.out.println("Note " + noteIndex + " at " + timeSincePlay + " ms (expected: " + noteTime[noteIndex] + " ms)");
                     }
                     noteIndex++;
                 } while (noteIndex < noteTime.length && noteTime[noteIndex] == noteTime[noteIndex - 1]);
+                if(noteIndex >= noteTime.length){
+                    new Timer(500, evt -> {
+                    game=false;
+                    endMenu=true;
+                ((Timer) evt.getSource()).stop();
+            }).start();
+                }
             }
 
             removeInactiveNotes();
@@ -289,7 +309,6 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         });
         animationTimer.start();
     }
-
     @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == play) {
@@ -316,7 +335,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             case 'd': d.setPressed(true); checkHit(2); break;
             case 'j': j.setPressed(true); checkHit(3); break;
             case 'k': k.setPressed(true); checkHit(4); break;
-            case 'p': game=false; stopSong(); break;
+            case 'p': game=false; endMenu = true; stopSong(); break;
         }
         repaint();
     }
