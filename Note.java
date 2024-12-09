@@ -6,7 +6,7 @@ public class Note {
 private int x,y,column;
 private boolean isActive;
 private int speed=5;
-private double travelTime = 7200/speed + 80;
+private double travelTime = 450/speed * 16;
 private double spawnTime;
 
     public Note(int col,double spawnTime){
