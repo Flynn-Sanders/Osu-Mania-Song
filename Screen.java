@@ -1,6 +1,5 @@
-import static java.awt.Color.white;
-
 import java.awt.*;
+import static java.awt.Color.white;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -50,8 +49,9 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 
     private char[] noteCol;
     private int[] noteTime;
-    private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380,s:17750,s:18210,d:18600,k:19080,k:19180,d:19450,j:19870,s:20100,j:20340,k:20800,s:20960,s:21150,d:21350,j:21550,j:21930,k:22170,s:22250,d:22470,s:22650,k:22900,j:23050,s:23300,d:23470,j:23730,k:24080,d:24340,j:24510:,s:24720,k:24970,d:25200,d:25340,";
-    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              deine           habit           kick    stand   yuh     bi-     kuh    yuh       yuh    i'm     lea      nin    i       chop    the     top     off     the     m      claren   this    aint    no   lam        b       ghi     ni      my      white    ho     got     big     teeglers
+    private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380,s:17750,s:18210,d:18600,k:19080,k:19180,d:19450,j:19870,s:20100,j:20340,k:20800,s:20960,s:21150,d:21350,j:21550,j:21930,k:22170,s:22250,d:22470,s:22650,k:22900,j:23050,s:23300,d:23470,j:23730,k:24080,d:24340,j:24510:,s:24720,k:24970,d:25200,d:25340,j:25550,s:25760,d:25860,k:26120,k:26500,s:26600,j:26850,d:27170,s:28300,j:28300,d:28550,k:28550,s:28680,j:28680,d:29980,k:29980,s:30255,j:30255,d:30425,k:30425";
+    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              deine           habit           kick    stand   yuh     bi-     kuh    yuh       yuh    i'm     lea      nin    i       chop    the     top     off     the     m      claren   this    aint    no   lam        b       ghi     ni      my      white    ho     got     big      teegs   she     re      mind     me     of     syd      ney    sweeny.         SYD              NEY          SWEENY,             SYD             NEY         SWEENY
+    /// 
     /// 
     private int noteIndex = 0;
     private BufferedImage menuImg;
@@ -206,16 +206,16 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     }
     }
     public void stopSong() {
-        try {
-            if (sourceLine != null && sourceLine.isOpen()) {
-                sourceLine.stop();  
-                sourceLine.close(); 
-                audioStream.close(); 
-                
+        if (sourceLine != null && sourceLine.isOpen()) {
+            sourceLine.stop();
+            sourceLine.close();
+        }
+        if (audioStream != null) {
+            try {
+                audioStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error stopping the song.");
         }
     }
 
@@ -275,30 +275,31 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             long elapsedNanoSec = System.nanoTime() - startTime;
             timeSincePlay=elapsedNanoSec / 1_000_000.0;
 
-            while(noteIndex<noteTime.length && noteTime[noteIndex] <= timeSincePlay){
-                do{
-                    char col = noteCol[noteIndex];
-                    int colInt = switch(col){
-                        case 's' -> 1;
-                        case 'd' -> 2;
-                        case 'j' -> 3;
-                        case 'k' -> 4;
-                        default -> 0;
-                    };
-                    if(colInt!=0){
-                        notes.add(new Note(colInt,noteTime[noteIndex]));
-                        //System.out.println("Note " + noteIndex + " at " + timeSincePlay + " ms (expected: " + noteTime[noteIndex] + " ms)");
-                    }
-                    noteIndex++;
-                } while (noteIndex < noteTime.length && noteTime[noteIndex] == noteTime[noteIndex - 1]);
+            while (noteIndex < noteTime.length && noteTime[noteIndex] <= timeSincePlay) {
+                char col = noteCol[noteIndex];
+                int colInt = switch (col) {
+                    case 's' -> 1;
+                    case 'd' -> 2;
+                    case 'j' -> 3;
+                    case 'k' -> 4;
+                    default -> 0;
+                };
+            
+                if (colInt != 0) {
+                    notes.add(new Note(colInt, noteTime[noteIndex]));
+                }
+            
+                noteIndex++; 
+            }
                 if(noteIndex >= noteTime.length){
-                    new Timer(500, evt -> {
+                    new Timer((int)travelTime + 1000, evt -> {
                     game=false;
                     endMenu=true;
+                    stopSong();
                 ((Timer) evt.getSource()).stop();
             }).start();
                 }
-            }
+            
 
             removeInactiveNotes();
             
