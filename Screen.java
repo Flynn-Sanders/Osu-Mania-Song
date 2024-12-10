@@ -36,6 +36,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
     ArrayList<Note> notes = new ArrayList<>();
     private final Hitter s,d,j,k;
     private final JButton play;
+    private final JButton restart;
 
     private boolean game;
     private boolean startMenu;
@@ -49,10 +50,10 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
 
     private char[] noteCol;
     private int[] noteTime;
-    private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380,s:17750,s:18210,d:18600,k:19080,k:19180,d:19450,j:19870,s:20100,j:20340,k:20800,s:20960,s:21150,d:21350,j:21550,j:21930,k:22170,s:22250,d:22470,s:22650,k:22900,j:23050,s:23300,d:23470,j:23730,k:24080,d:24340,j:24510:,s:24720,k:24970,d:25200,d:25340,j:25550,s:25760,d:25860,k:26120,k:26500,s:26600,j:26850,d:27170,s:28300,j:28300,d:28550,k:28550,s:28680,j:28680,d:29980,k:29980,s:30255,j:30255,d:30425,k:30425";
-    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              deine           habit           kick    stand   yuh     bi-     kuh    yuh       yuh    i'm     lea      nin    i       chop    the     top     off     the     m      claren   this    aint    no   lam        b       ghi     ni      my      white    ho     got     big      teegs   she     re      mind     me     of     syd      ney    sweeny.         SYD              NEY          SWEENY,             SYD             NEY         SWEENY
-    /// 
-    /// 
+    private String noteMap = "s:3400,k:5125,s:6000,d:6380,j:6790,s:7600,s:8100,d:8470,d:8940,j:9300,j:9770,k:10170,s:11050,d:11050,j:11480,k:11480,s:11900,k:11900,d:12250,j:12250,s:12730,j:12730,d:13130,k:13130,s:13550,s:14000,d:14255,k:14390,j:14600,d:14800,k:15250,s:15600,k:16085,s:16510,d:16510,j:16970,k:16970,d:17380,j:17380,s:17750,s:18210,d:18600,k:19080,k:19180,d:19450,j:19870,s:20100,j:20340,k:20800,s:20960,s:21150,d:21350,j:21550,j:21930,k:22170,s:22250,d:22470,s:22650,k:22900,j:23050,s:23300,d:23470,j:23730,k:24080,d:24340,j:24510:,s:24720,k:24970,d:25200,d:25340,j:25550,s:25760,d:25860,k:26120,k:26500,s:26600,j:26850,d:27170,s:28300,j:28300,d:28550,k:28550,s:28680,j:28680,d:29980,k:29980,s:30255,j:30255,d:30425,k:30425,s:31100,k:31340,d:31550,j:31800,d:31970,j:32170,j:32420,s:32510,k:32940,d:33170,s:33420,j:33608,s:33800";
+    ///                                                                                                                                                                                                                            promethazine                    habit   lean    habit   co              deine           habit           kick    stand   yuh     bi-     kuh    yuh       yuh    i'm     lea      nin    i       chop    the     top     off     the     m      claren   this    aint    no   lam        b       ghi     ni      my      white    ho     got     big      teegs   she     re      mind     me     of     syd      ney    sweeny.         SYD              NEY          SWEENY,             SYD             NEY         SWEENY        i     rock    that    stick   like   its     a       purse   yeah    my      chop    a        swingn
+    ///                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+    ///                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
     private int noteIndex = 0;
     private BufferedImage menuImg;
 
@@ -74,6 +75,13 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
         play.setBounds(133,250,133,50);
         play.addActionListener(this);
         this.add(play);
+
+        restart = new JButton("RESTART");
+        this.setLayout(null);
+        restart.setBounds(133,250,133,50);
+        restart.addActionListener(this);
+        this.add(restart);
+        restart.setVisible(false);
 
 
         try {
@@ -114,6 +122,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
             g.setColor(white);
             g.setFont(titleFont);
             g.drawString("YOU DID IT", 100, 150);
+            restart.setVisible(true);
             drawStats(g);
         }
         else if(game){
@@ -326,7 +335,22 @@ public class Screen extends JPanel implements KeyListener, ActionListener{
                 
                 ((Timer) evt.getSource()).stop();
             }).start();
-}
+            }
+            if (e.getSource() == restart) {
+                restart.setVisible(false);
+                game = true;
+                endMenu = false;
+                repaint();
+
+                new Timer(500, evt -> {
+                parseNoteMap(noteMap);
+                startTime = System.nanoTime();
+                playSong1Stream();
+                animate();
+                
+                ((Timer) evt.getSource()).stop();
+            }).start();
+            }
     }
 
     public void keyPressed(KeyEvent e){
